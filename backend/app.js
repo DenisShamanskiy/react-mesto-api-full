@@ -3,9 +3,11 @@ const mongoose = require("mongoose");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const { errors, celebrate, Joi } = require("celebrate");
+const cors = require("cors");
 const dotenv = require("dotenv");
 
 const { requestLogger, errorLogger } = require("./middlewares/logger");
+const corsOption = require("./middlewares/corsOption");
 
 dotenv.config();
 
@@ -53,6 +55,7 @@ app.use(helmet());
 app.use(cookieParser());
 
 app.use(requestLogger);
+app.use(cors(corsOption));
 
 app.post(
   "/signup",
