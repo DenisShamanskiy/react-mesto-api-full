@@ -20,7 +20,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "npm run build && scp -r ./build/* denis_shamanskiy@178.154.201.218:/home/denis_shamanskiy/mesto-frontend",
+    "deploy": "npm run build && scp -r ./build/* denis_shamanskiy@178.154.201.218:/home/denis_shamanskiy/react-mesto-api-full/frontend/build",
     "deployGH": "gh-pages -d build"
   },
   "repository": {
