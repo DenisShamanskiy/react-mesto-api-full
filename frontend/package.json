@@ -20,19 +20,19 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "npm run build && scp -r ./build/* denis_shamanskiy@178.154.201.218:/home/denis_shamanskiy/react-mesto-api-full/frontend/build",
+    "deploy": "npm run build && scp -r ./build/* shamanskiy@178.154.241.168:/home/shamanskiy/react-mesto-api-full/frontend",
     "deployGH": "gh-pages -d build"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DenisShamanskiy/react-mesto-auth.git"
+    "url": "git+https://github.com/DenisShamanskiy/react-mesto-api-full/frontend.git"
   },
   "author": "Denis Shamanskiy",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/DenisShamanskiy/react-mesto-auth/issues"
+    "url": "https://github.com/DenisShamanskiy/react-mesto-api-full/frontend/issues"
   },
-  "homepage": "https://DenisShamanskiy.github.io/react-mesto-auth/",
+  "homepage": "https://DenisShamanskiy.github.io/react-mesto-api-full/frontend/",
   "eslintConfig": {
     "extends": [
       "react-app",
