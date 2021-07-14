@@ -1,12 +1,13 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const User = require("../models/user");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const User = require('../models/user');
 
-const { OK_CODE_200 } = require("../utils/constants");
+const { OK_CODE_200 } = require('../utils/constants');
 
-const NotFoundError = require("../errors/not-found-error");
-const BadRequestError = require("../errors/bad-request-error");
-const ConflictError = require("../errors/conflict-error");
+const NotFoundError = require('../errors/not-found-error');
+const BadRequestError = require('../errors/bad-request-error');
+const ConflictError = require('../errors/conflict-error');
+const NotAuthError = require('../errors/not-auth-error');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -16,10 +17,10 @@ function login(req, res, next) {
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        NODE_ENV === "production" ? JWT_SECRET : "dev-secret",
-        { expiresIn: "7d" }
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+        { expiresIn: '7d' },
       );
-      /*res
+      res
         .status(OK_CODE_200)
         .cookie(
           'jwt',
@@ -30,13 +31,10 @@ function login(req, res, next) {
             sameSite: true,
           },
         )
-        .send({ message: 'Вход успешно выполнен' });*/
-      res.status(OK_CODE_200).send({ token });
+        .send({ message: 'Вход успешно выполнен' });
     })
-    .catch((err) => {
-      if (err.statusCode === 401) {
-        next(err);
-      }
+    .catch(() => {
+      throw new NotAuthError('Передан неверный логин или пароль');
     })
     .catch(next);
 }
@@ -49,16 +47,14 @@ function getUsers(req, res, next) {
 
 function getUserById(req, res, next) {
   User.findById(req.params.userId)
-    .orFail(new Error("NotValidId"))
+    .orFail(new Error('NotValidId'))
     .then((user) => res.status(OK_CODE_200).send(user))
     .catch((err) => {
-      if (err.message === "NotValidId") {
-        throw new NotFoundError("Пользователь не найден");
+      if (err.message === 'NotValidId') {
+        throw new NotFoundError('Пользователь не найден');
       }
-      if (err.name === "CastError") {
-        throw new BadRequestError(
-          "Переданы некорректные данные при поиске пользователя"
-        );
+      if (err.name === 'CastError') {
+        throw new BadRequestError('Переданы некорректные данные при поиске пользователя');
       }
       next(err);
     })
@@ -69,16 +65,14 @@ function getCurrentUser(req, res, next) {
   const { _id } = req.user;
 
   User.findById(_id)
-    .orFail(new Error("NotValidId"))
+    .orFail(new Error('NotValidId'))
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.message === "NotValidId") {
-        throw new NotFoundError("Пользователь не найден");
+      if (err.message === 'NotValidId') {
+        throw new NotFoundError('Пользователь не найден');
       }
-      if (err.name === "CastError") {
-        throw new BadRequestError(
-          "Переданы некорректные данные при поиске пользователя"
-        );
+      if (err.name === 'CastError') {
+        throw new BadRequestError('Переданы некорректные данные при поиске пользователя');
       }
       next(err);
     })
@@ -86,34 +80,28 @@ function getCurrentUser(req, res, next) {
 }
 
 function createUser(req, res, next) {
-  const { name, about, avatar, email, password } = req.body;
-  bcrypt
-    .hash(password, 10)
-    .then((hash) =>
-      User.create({
-        name,
-        about,
-        avatar,
-        email,
-        password: hash,
-      })
-    )
-    .then((user) => {
-      res.status(OK_CODE_200).ssend({
-        data: {
-          id: user._id,
-          name: user.name,
-          about: user.about,
-          avatar: user.avatar,
-          email: user.email,
-        },
-      });
-    })
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }))
+    .then((user) => res.status(OK_CODE_200).send({
+      _id: user._id,
+      email: user.email,
+    }))
     .catch((err) => {
-      if (err.name === "MongoError" && err.code === 11000) {
-        throw new ConflictError(
-          `Пользователь с Email ${req.body.email} уже существует`
-        );
+      if (err.name === 'MongoError' && err.code === 11000) {
+        throw new ConflictError(`Пользователь с Email ${req.body.email} уже существует`);
       }
       return next(err);
     })
@@ -126,18 +114,16 @@ function updateUser(req, res, next) {
   User.findByIdAndUpdate(
     id,
     { name, about },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
-    .orFail(new Error("NotValidId"))
+    .orFail(new Error('NotValidId'))
     .then((user) => res.status(OK_CODE_200).send(user))
     .catch((err) => {
-      if (err.message === "NotValidId") {
-        throw new NotFoundError("Пользователь не найден");
+      if (err.message === 'NotValidId') {
+        throw new NotFoundError('Пользователь не найден');
       }
-      if (err.name === "CastError" || err.name === "ValidationError") {
-        throw new BadRequestError(
-          "Переданы некорректные данные при поиске пользователя"
-        );
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        throw new BadRequestError('Переданы некорректные данные при поиске пользователя');
       }
       next(err);
     })
@@ -147,17 +133,19 @@ function updateUser(req, res, next) {
 function updateAvatar(req, res, next) {
   const { avatar } = req.body;
   const id = req.user._id;
-  User.findByIdAndUpdate(id, { avatar }, { new: true, runValidators: true })
-    .orFail(new Error("NotValidId"))
+  User.findByIdAndUpdate(
+    id,
+    { avatar },
+    { new: true, runValidators: true },
+  )
+    .orFail(new Error('NotValidId'))
     .then((user) => res.status(OK_CODE_200).send(user))
     .catch((err) => {
-      if (err.message === "NotValidId") {
-        throw new NotFoundError("Пользователь не найден");
+      if (err.message === 'NotValidId') {
+        throw new NotFoundError('Пользователь не найден');
       }
-      if (err.name === "CastError" || err.name === "ValidationError") {
-        throw new BadRequestError(
-          "Переданы некорректные данные при поиске пользователя"
-        );
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        throw new BadRequestError('Переданы некорректные данные при поиске пользователя');
       }
       next(err);
     })
