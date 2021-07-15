@@ -1,26 +1,25 @@
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const { errors, celebrate, Joi } = require("celebrate");
-const dotenv = require("dotenv");
-const { requestLogger, errorLogger } = require("./middlewares/logger");
-
-dotenv.config();
-
-const rateLimit = require("express-rate-limit");
-const NotFoundError = require("./errors/not-found-error");
-
-const auth = require("./middlewares/auth");
-// eslint-disable-next-line import/extensions
-const customErrorsHandler = require("./middlewares/customErrorsHandler");
-const { validIsURL } = require("./utils/constants");
-
 const cardRouter = require("./routes/cards");
 const userRouter = require("./routes/users");
 const { login, createUser } = require("./controllers/users");
-const { urlServer, database, corsOptions } = require("./utils/constants");
+const auth = require("./middlewares/auth");
+const NotFoundError = require("./errors/not-found-error");
+const {
+  urlServer,
+  database,
+  corsOptions,
+  validIsURL,
+} = require("./utils/constants");
+const customErrorsHandler = require("./middlewares/customErrorsHandler");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
+
+const rateLimit = require("express-rate-limit");
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,

@@ -3,6 +3,7 @@ const validator = require("validator");
 const OK_CODE_200 = 200;
 const urlServer = "localhost:27017";
 const database = "mestodb";
+const randomString = "dev-secret";
 
 const validIsURL = (value) => {
   const result = validator.isURL(value);
@@ -25,6 +26,7 @@ module.exports = {
   corsOptions,
   urlServer,
   database,
+  randomString,
   OK_CODE_200,
   validIsURL,
 };
