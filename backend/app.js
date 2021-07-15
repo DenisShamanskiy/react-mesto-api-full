@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const { errors, celebrate, Joi } = require('celebrate');
 const dotenv = require('dotenv');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 dotenv.config();
 
@@ -49,6 +50,8 @@ connectMongoose();
 app.use(express.json());
 app.use(helmet());
 app.use(cookieParser());
+app.use(requestLogger);
+app.use(corsHandler);
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
@@ -71,12 +74,12 @@ app.use(auth);
 app.use('/users', userRouter);
 app.use('/cards', cardRouter);
 
-app.use(errors());
-
 app.use('*', () => {
   throw new NotFoundError('Запрашиваемый ресурс не найден');
 });
 
+app.use(errorLogger);
+app.use(errors());
 app.use(customErrorsHandler);
 
 app.listen(PORT, () => {
