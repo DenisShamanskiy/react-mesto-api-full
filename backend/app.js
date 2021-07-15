@@ -1,25 +1,26 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const helmet = require('helmet');
-const cookieParser = require('cookie-parser');
-const { errors, celebrate, Joi } = require('celebrate');
-const dotenv = require('dotenv');
-const { requestLogger, errorLogger } = require('./middlewares/logger');
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const helmet = require("helmet");
+const cookieParser = require("cookie-parser");
+const { errors, celebrate, Joi } = require("celebrate");
+const dotenv = require("dotenv");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 
 dotenv.config();
 
-const rateLimit = require('express-rate-limit');
-const NotFoundError = require('./errors/not-found-error');
+const rateLimit = require("express-rate-limit");
+const NotFoundError = require("./errors/not-found-error");
 
-const auth = require('./middlewares/auth');
+const auth = require("./middlewares/auth");
 // eslint-disable-next-line import/extensions
-const customErrorsHandler = require('./middlewares/customErrorsHandler');
-const { validIsURL } = require('./utils/constants');
+const customErrorsHandler = require("./middlewares/customErrorsHandler");
+const { validIsURL } = require("./utils/constants");
 
-const cardRouter = require('./routes/cards');
-const userRouter = require('./routes/users');
-const { login, createUser } = require('./controllers/users');
-const { urlServer, database } = require('./utils/constants');
+const cardRouter = require("./routes/cards");
+const userRouter = require("./routes/users");
+const { login, createUser } = require("./controllers/users");
+const { urlServer, database, corsOptions } = require("./utils/constants");
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -38,10 +39,10 @@ async function connectMongoose() {
       useUnifiedTopology: true,
     });
     // eslint-disable-next-line no-console
-    console.log('Связь с MongoDB установлена');
+    console.log("Связь с MongoDB установлена");
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.log('Ошибка подключения к MongoDB', error);
+    console.log("Ошибка подключения к MongoDB", error);
     process.exit(1);
   }
 }
@@ -51,31 +52,45 @@ app.use(express.json());
 app.use(helmet());
 app.use(cookieParser());
 app.use(requestLogger);
-app.use(corsHandler);
+app.use(cors(corsOptions));
 
-app.post('/signup', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required().min(8).trim(),
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().custom(validIsURL),
+app.get("/crash-test", () => {
+  setTimeout(() => {
+    throw new Error("Сервер сейчас упадёт");
+  }, 0);
+});
+
+app.post(
+  "/signup",
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(8).trim(),
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+      avatar: Joi.string().custom(validIsURL),
+    }),
   }),
-}), createUser);
-app.post('/signin', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().min(8).required(),
+  createUser
+);
+app.post(
+  "/signin",
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().min(8).required(),
+    }),
   }),
-}), login);
+  login
+);
 
 app.use(limiter);
 app.use(auth);
-app.use('/users', userRouter);
-app.use('/cards', cardRouter);
+app.use("/users", userRouter);
+app.use("/cards", cardRouter);
 
-app.use('*', () => {
-  throw new NotFoundError('Запрашиваемый ресурс не найден');
+app.use("*", () => {
+  throw new NotFoundError("Запрашиваемый ресурс не найден");
 });
 
 app.use(errorLogger);
