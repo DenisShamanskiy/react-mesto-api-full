@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const jsonwebtoken = require("jsonwebtoken");
 const User = require("../models/user");
 
 const { OK_CODE_200, randomString } = require("../utils/constants");
@@ -32,7 +32,7 @@ const login = async (req, res, next) => {
       //   maxAge: 3600000 * 24 * 7, httpOnly: true, sameSite: 'none', secure: true,
       // })
       res
-        .status(200)
+        .status(OK_CODE_200)
         .cookie("jwt", token, {
           maxAge: 3600000 * 24 * 7,
           domain: ".example.com",
@@ -70,12 +70,70 @@ const login = async (req, res, next) => {
     .catch(next);
 } */
 
+const logout = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const { jwt } = req.cookies;
+
+    let verifiedUser = null;
+
+    if (!jwt) {
+      throw new NotAuthError("C токеном что-то не так");
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) throw new NotFoundError("Пользователь с такой почтой не найден");
+
+    jsonwebtoken.verify(
+      jwt,
+      NODE_ENV === "production" ? JWT_SECRET : randomString,
+      (err, decoded) => {
+        if (err) {
+          throw new NotAuthError("Необходима авторизация");
+        }
+        verifiedUser = decoded;
+
+        if (user._id.toHexString() !== verifiedUser._id) {
+          throw new NotAuthError("Необходима авторизация");
+        }
+      }
+    );
+    res
+      .status(200)
+      .clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true })
+      .send({ message: "Вы успешно вышли из системы!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getUsers = async (req, res, next) => {
+  try {
+    const users = await User.find({});
+    res.send(users);
+  } catch (error) {
+    next(error);
+  }
+};
+/*
 function getUsers(req, res, next) {
   User.find({})
     .then((users) => res.status(OK_CODE_200).send(users))
     .catch(next);
-}
+}*/
 
+const getUserById = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) throw new NotFoundError("Запрашиваемый пользователь не найден");
+    res.send(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/*
 function getUserById(req, res, next) {
   User.findById(req.params.userId)
     .orFail(new Error("NotValidId"))
@@ -92,7 +150,7 @@ function getUserById(req, res, next) {
       next(err);
     })
     .catch(next);
-}
+}*/
 
 const getCurrentUser = async (req, res, next) => {
   const { user } = req;
@@ -201,6 +259,7 @@ function updateAvatar(req, res, next) {
 
 module.exports = {
   login,
+  logout,
   getUsers,
   getUserById,
   getCurrentUser,
