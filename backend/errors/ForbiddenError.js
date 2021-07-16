@@ -1,8 +1,8 @@
-class NoRulesError extends Error {
+class ForbiddenError extends Error {
   constructor(message) {
     super(message);
     this.statusCode = 403;
   }
 }
 
-module.exports = NoRulesError;
+module.exports = ForbiddenError;

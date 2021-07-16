@@ -1,8 +1,8 @@
-class LoginError extends Error {
+class NotAuthError extends Error {
   constructor(message) {
     super(message);
     this.statusCode = 401;
   }
 }
 
-module.exports = LoginError;
+module.exports = NotAuthError;
