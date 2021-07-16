@@ -1,6 +1,6 @@
-const router = require("express").Router();
-const { celebrate, Joi } = require("celebrate");
-const { validIsURL } = require("../utils/constants");
+const router = require('express').Router();
+const { celebrate, Joi } = require('celebrate');
+const { validIsURL } = require('../utils/constants');
 
 const {
   getUsers,
@@ -8,33 +8,33 @@ const {
   changeAvatar,
   getMe,
   getUser,
-} = require("../controllers/users");
+} = require('../controllers/users');
 
-router.get("/me", getMe);
+router.get('/me', getMe);
 
-router.get("/", getUsers);
+router.get('/', getUsers);
 
-router.get("/:userId", getUser);
+router.get('/:userId', getUser);
 
 router.patch(
-  "/me",
+  '/me',
   celebrate({
     body: Joi.object().keys({
       name: Joi.string().min(2).max(20),
       about: Joi.string().required().min(2).max(30),
     }),
   }),
-  changeUser
+  changeUser,
 );
 
 router.patch(
-  "/me/avatar",
+  '/me/avatar',
   celebrate({
     body: Joi.object().keys({
       avatar: Joi.string().required().custom(validIsURL),
     }),
   }),
-  changeAvatar
+  changeAvatar,
 );
 
 module.exports = router;

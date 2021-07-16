@@ -9,6 +9,7 @@ const cardsRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const errorHandler = require('./middlewares/err');
+const { validIsURL } = require('./utils/constants');
 const corsOption = require('./middlewares/corsOption');
 const NotFoundError = require('./errors/NotFoundError');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
@@ -40,19 +41,18 @@ app.get('/crash-test', () => {
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required().pattern(new RegExp('^[a-z0-9-_.]{1,20}@[a-z0-9-_.]{1,20}\\.[a-z]{2,5}$')),
-    password: Joi.string().required(),
-    name: Joi.string().min(2).max(20),
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8).trim(),
+    name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    // eslint-disable-next-line max-len,no-useless-escape
-    avatar: Joi.string().pattern(new RegExp(/^(http|https):\/\/[A-za-z0-9-._~:/?#\[\]@!$&'()*+,;=]{1,}$/)),
+    avatar: Joi.string().custom(validIsURL),
   }),
 }), createUser);
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required().pattern(new RegExp('^[a-z0-9-_.]{1,20}@[a-z0-9-_.]{1,20}\\.[a-z]{2,5}$')),
-    password: Joi.string().required(),
+    email: Joi.string().required().email(),
+    password: Joi.string().min(8).required(),
   }),
 }), login);
 
