@@ -2,36 +2,27 @@ const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 
 const {
-  getUsers,
-  getUserById,
-  updateUser,
-  updateAvatar,
-  getCurrentUser,
+  getUsers, changeUser, changeAvatar, getMe, getUser,
 } = require('../controllers/users');
 
-const { validIsURL } = require('../utils/constants');
+router.get('/me', getMe);
 
 router.get('/', getUsers);
 
-router.get('/me', getCurrentUser);
+router.get('/:userId', getUser);
 
 router.patch('/me', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30),
+    name: Joi.string().min(2).max(20),
     about: Joi.string().required().min(2).max(30),
   }),
-}), updateUser);
+}), changeUser);
 
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required().custom(validIsURL),
+    // eslint-disable-next-line no-invalid-regexp,no-useless-escape
+    avatar: Joi.string().required().pattern(new RegExp(/^(http|https):\/\/[A-za-z0-9-._~:/?#\[\]@!$&'()*+,;=]{1,}$/)),
   }),
-}), updateAvatar);
-
-router.get('/:userId', celebrate({
-  params: Joi.object().keys({
-    userId: Joi.string().required().hex().length(24),
-  }),
-}), getUserById);
+}), changeAvatar);
 
 module.exports = router;
