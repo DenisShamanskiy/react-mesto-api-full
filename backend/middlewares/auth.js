@@ -5,6 +5,8 @@ const { randomString } = require("../utils/constants");
 const auth = (req, res, next) => {
   const { jwt } = req.cookies;
   const { NODE_ENV, JWT_SECRET } = process.env;
+  console.log(req);
+  console.log(jwt);
   console.log(NODE_ENV, JWT_SECRET);
 
   try {
