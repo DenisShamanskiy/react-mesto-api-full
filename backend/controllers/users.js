@@ -11,7 +11,42 @@ const NotAuthError = require("../errors/not-auth-error");
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
-function login(req, res, next) {
+const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!user) throw new NotAuthError("Неправильные почта или пароль");
+
+    const isMatched = await bcrypt.compare(password, user.password);
+
+    if (!isMatched) {
+      throw new NotAuthError("Неправильные почта или пароль");
+    } else {
+      const token = jsonwebtoken.sign(
+        { _id: user._id },
+        NODE_ENV === "production" ? JWT_SECRET : randomString,
+        { expiresIn: "7d" }
+      );
+      // res.status(200).cookie('jwt', token, {
+      //   maxAge: 3600000 * 24 * 7, httpOnly: true, sameSite: 'none', secure: true,
+      // })
+      res
+        .status(200)
+        .cookie("jwt", token, {
+          maxAge: 3600000 * 24 * 7,
+          domain: ".example.com",
+          path: "/admin",
+          secure: true,
+        })
+        .send({ message: "Вы успешно авторизованы!" });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+/* function login(req, res, next) {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
@@ -33,7 +68,7 @@ function login(req, res, next) {
       throw new NotAuthError("Передан неверный логин или пароль");
     })
     .catch(next);
-}
+} */
 
 function getUsers(req, res, next) {
   User.find({})
