@@ -1,32 +1,20 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const validator = require('validator');
 const NotAuthError = require('../errors/NotAuthError');
 
-// напишите код здесь
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    // validate: {
-    //   validator(v) {
-    //     return /^[a-za-яё0-9 -]+$/i.test(v);
-    //   },
-    //   message: 'Укажите корректное название',
-    // },
-    minlength: 2,
-    maxlength: 20,
     default: 'Жак-Ив Кусто',
+    minlength: 2,
+    maxlength: 30,
   },
   about: {
     type: String,
-    // validate: {
-    //   validator(v) {
-    //     return /^[a-za-яё0-9 -]+$/i.test(v);
-    //   },
-    //   message: 'Укажите корректное название',
-    // },
+    default: 'Исследователь',
     minlength: 2,
     maxlength: 30,
-    default: 'Исследователь',
   },
   avatar: {
     type: String,
@@ -35,33 +23,41 @@ const userSchema = new mongoose.Schema({
       validator(avatar) {
         return /^(http:|https:)\/\/w*\w/.test(avatar);
       },
-      message: 'Ссылка на аватар некорректна',
+      message: 'Укажите корректную ссылку',
     },
   },
   email: {
     type: String,
-    validate: {
-      validator(v) {
-        return /^[a-z0-9-_.]{1,20}@[a-z0-9-_.]{1,20}\.[a-z]{2,5}$/.test(v);
-      },
-      message: 'Укажите почту в формате name@email.domen',
-    },
     required: true,
     unique: true,
+    validate: {
+      validator(email) {
+        return validator.isEmail(email);
+      },
+      message: 'Email некорректный',
+    },
   },
   password: {
     type: String,
     required: true,
+    minlength: 8,
+    validate: {
+      validator(password) {
+        return validator.isStrongPassword(password);
+      },
+      message:
+        'Не является надежным паролем. Длина должна быть не менее 8 символов',
+    },
     select: false,
   },
 });
 
-userSchema.statics.findUserByEmail = function (email, password) {
+userSchema.statics.findUserByEmail = function fn(email, password) {
   return this.findOne({ email }).select('+password')
-    .orFail(() => new NotAuthError('Неправильные почта или пароль'))
+    .orFail(() => new NotAuthError('Передан неверный логин или пароль'))
     .then((user) => bcrypt.compare(password, user.password)
       .then((matched) => {
-        if (!matched) throw new NotAuthError('Неправильные почта или пароль');
+        if (!matched) throw new NotAuthError('Передан неверный логин или пароль');
         return user;
       }));
 };
