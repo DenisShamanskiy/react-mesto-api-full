@@ -13,14 +13,26 @@ const { validIsURL } = require('./utils/constants');
 const corsOption = require('./middlewares/corsOption');
 const NotFoundError = require('./errors/NotFoundError');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
+const { urlServer, database } = require('./utils/constants');
 require('dotenv').config();
 
-mongoose.connect('mongodb://localhost:27017/mestodb', {
-  useNewUrlParser: true,
-  useCreateIndex: true,
-  useFindAndModify: false,
-  useUnifiedTopology: true,
-});
+async function connectMongoose() {
+  try {
+    await mongoose.connect(`mongodb://${urlServer}/${database}`, {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+      useUnifiedTopology: true,
+    });
+    // eslint-disable-next-line no-console
+    console.log('Связь с MongoDB установлена');
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.log('Ошибка подключения к MongoDB', error);
+    process.exit(1);
+  }
+}
+connectMongoose();
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -32,7 +44,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(requestLogger);
 app.use(cors(corsOption));
 
-// удалить после ревью
 app.get('/crash-test', () => {
   setTimeout(() => {
     throw new Error('Сервер сейчас упадёт');
@@ -56,27 +67,12 @@ app.post('/signin', celebrate({
   }),
 }), login);
 
-app.use('/cards', auth, cardsRouter);
-app.use('/users', auth, usersRouter);
+app.use(auth);
+app.use('/cards', cardsRouter);
+app.use('/users', usersRouter);
 
-app.get('/', (req, res, next) => {
-  if (req) throw new NotFoundError('Запрашиваемый ресурс не найден');
-  next();
-});
-
-app.post('/', (req, res, next) => {
-  if (req) throw new NotFoundError('Запрашиваемый ресурс не найден');
-  next();
-});
-
-app.get('/:path', (req, res, next) => {
-  if (req.params.path) throw new NotFoundError('Запрашиваемый ресурс не найден');
-  next();
-});
-
-app.post('/:path', (req, res, next) => {
-  if (req.params.path) throw new NotFoundError('Запрашиваемый ресурс не найден');
-  next();
+app.use('*', () => {
+  throw new NotFoundError('Запрашиваемый ресурс не найден');
 });
 
 app.use(errorLogger);

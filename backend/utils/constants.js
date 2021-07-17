@@ -1,9 +1,9 @@
 const validator = require('validator');
 
 const OK_CODE_200 = 200;
-/*
+
 const urlServer = 'localhost:27017';
-const database = 'mestodb'; */
+const database = 'mestodb';
 
 const validIsURL = (value) => {
   const result = validator.isURL(value);
@@ -14,8 +14,8 @@ const validIsURL = (value) => {
 };
 
 module.exports = {
-  // urlServer,
-  // database,
+  urlServer,
+  database,
   OK_CODE_200,
   validIsURL,
 };

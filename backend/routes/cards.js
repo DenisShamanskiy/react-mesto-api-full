@@ -12,46 +12,34 @@ const {
 
 router.get('/', getCards);
 
-router.post(
-  '/',
-  celebrate({
-    body: Joi.object().keys({
-      name: Joi.string().min(2).max(30),
-      // eslint-disable-next-line no-useless-escape
-      link: Joi.string().required().custom(validIsURL),
-    }),
+router.post('/', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    // eslint-disable-next-line no-useless-escape
+    link: Joi.string().required().custom(validIsURL),
   }),
-  createCard,
-);
+}),
+createCard);
 
-router.delete(
-  '/:cardId',
-  celebrate({
-    params: Joi.object().keys({
-      cardId: Joi.string().required(),
-    }),
+router.delete('/:cardId', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().required(),
   }),
-  deleteCard,
-);
+}),
+deleteCard);
 
-router.put(
-  '/:cardId/likes',
-  celebrate({
-    params: Joi.object().keys({
-      cardId: Joi.string().required(),
-    }),
+router.put('/:cardId/likes', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().required(),
   }),
-  likeCard,
-);
+}),
+likeCard);
 
-router.delete(
-  '/:cardId/likes',
-  celebrate({
-    params: Joi.object().keys({
-      cardId: Joi.string().required(),
-    }),
+router.delete('/:cardId/likes', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().required(),
   }),
-  dislikeCard,
-);
+}),
+dislikeCard);
 
 module.exports = router;
