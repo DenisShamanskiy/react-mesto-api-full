@@ -204,10 +204,11 @@ function App() {
       .register(email, password)
       .then((res) => {
         setIsLoading(false);
-        setUserEmail(res.email);
-        setUserPassword(res.password);
+        //setUserEmail(res.email);
+        //setUserPassword(res.password);
         setIsSuccessInfoToolTip(true);
         setInfoToolTipPopupOpen(true);
+        history.push("/signin");
       })
       .catch(() => {
         setIsSuccessInfoToolTip(false);
