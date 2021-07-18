@@ -26,7 +26,11 @@ module.exports.getCurrentUser = (req, res, next) => {
 module.exports.getUser = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
-    .orFail(() => new BadRequestError('Переданы некорректные данные при поиске пользователя'))
+    .orFail(
+      () => new BadRequestError(
+        'Переданы некорректные данные при поиске пользователя',
+      ),
+    )
     .then((user) => res.status(OK_CODE_200).send(user))
     .catch(next);
 };
@@ -35,22 +39,28 @@ module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  bcrypt.hash(password, 10)
-    .then((hash) => User.create({
-      name, about, avatar, email, password: hash,
-    })
-      .then((user) => {
-        // eslint-disable-next-line no-param-reassign
-        user.password = '';
-        res.status(OK_CODE_200).send(user);
-      })
-      .catch(next));
+  bcrypt.hash(password, 10).then((hash) => User.create({
+    name,
+    about,
+    avatar,
+    email,
+    password: hash,
+  })
+    .then((user) => res.status(OK_CODE_200).send({
+      _id: user._id,
+      email: user.email,
+    }))
+    .catch(next));
 };
 
 module.exports.updateUser = (req, res, next) => {
   const id = req.user._id;
   const { name, about } = req.body;
-  User.findByIdAndUpdate(id, { name, about }, { new: true, runValidators: true })
+  User.findByIdAndUpdate(
+    id,
+    { name, about },
+    { new: true, runValidators: true },
+  )
     .orFail(() => new NotFoundError('Пользователь не найден'))
     .then((user) => res.status(OK_CODE_200).send(user))
     .catch(next);
@@ -69,7 +79,11 @@ module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   User.findUserByEmail(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret-key', { expiresIn: '7d' });
+      const token = jwt.sign(
+        { _id: user._id },
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret-key',
+        { expiresIn: '7d' },
+      );
       res.status(OK_CODE_200).send({ token });
     })
     .catch(next);

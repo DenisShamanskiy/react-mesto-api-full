@@ -197,12 +197,15 @@ function App() {
       });
   }
 
-  function handleRegister(data) {
+  function handleRegister(email, password) {
+    setIsLoading(true);
+    console.log(email, password);
     auth
-      .register(data)
+      .register(email, password)
       .then((res) => {
-        setUserEmail(res.data.email);
-        setUserPassword(data.password);
+        setIsLoading(false);
+        setUserEmail(res.email);
+        setUserPassword(res.password);
         setIsSuccessInfoToolTip(true);
         setInfoToolTipPopupOpen(true);
       })
@@ -214,6 +217,7 @@ function App() {
 
   function handleLogin(email, password) {
     setIsLoading(true);
+    console.log(email, password);
     auth
       .login(email, password)
       .then((res) => {
