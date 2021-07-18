@@ -8,7 +8,7 @@ const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
-const errorHandler = require('./middlewares/customErrorsHandler');
+const customErrorsHandler = require('./middlewares/customErrorsHandler');
 const { validIsURL } = require('./utils/constants');
 const corsOption = require('./middlewares/corsOption');
 const NotFoundError = require('./errors/NotFoundError');
@@ -44,11 +44,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(requestLogger);
 app.use(cors(corsOption));
 
-app.get('/crash-test', () => {
+/* app.get('/crash-test', () => {
   setTimeout(() => {
     throw new Error('Сервер сейчас упадёт');
   }, 0);
-});
+}); */
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
@@ -78,7 +78,7 @@ app.use('*', () => {
 app.use(errorLogger);
 
 app.use(errors());
-app.use(errorHandler);
+app.use(customErrorsHandler);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console

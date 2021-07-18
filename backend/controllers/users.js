@@ -34,6 +34,22 @@ module.exports.getCurrentUser = (req, res, next) => {
     .catch(next);
 };
 
+module.exports.getUserById = (req, res, next) => {
+  User.findById(req.params.userId)
+    .orFail(new Error('NotValidId'))
+    .then((user) => res.status(OK_CODE_200).send(user))
+    .catch((err) => {
+      if (err.message === 'NotValidId') {
+        throw new NotFoundError('Пользователь не найден');
+      }
+      if (err.name === 'CastError') {
+        throw new BadRequestError('Переданы некорректные данные при поиске пользователя');
+      }
+      next(err);
+    })
+    .catch(next);
+};
+
 module.exports.createUser = (req, res, next) => {
   const {
     name,
