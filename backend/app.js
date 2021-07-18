@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const { celebrate, Joi, errors } = require('celebrate');
 const cors = require('cors');
@@ -15,6 +16,11 @@ const NotFoundError = require('./errors/NotFoundError');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { urlServer, database } = require('./utils/constants');
 require('dotenv').config();
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+});
 
 async function connectMongoose() {
   try {
@@ -67,6 +73,7 @@ app.post('/signin', celebrate({
   }),
 }), login);
 
+app.use(limiter);
 app.use(auth);
 app.use('/cards', cardsRouter);
 app.use('/users', usersRouter);
