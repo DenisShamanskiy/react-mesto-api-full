@@ -30,7 +30,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState({});
 
   const [userEmail, setUserEmail] = useState("");
-  const [userPassword, setUserPassword] = useState("");
+  //const [userPassword, setUserPassword] = useState("");
 
   const [cards, setCards] = useState([]);
   const [cardForDelete, setCardForDelete] = useState({});
@@ -163,7 +163,7 @@ function App() {
   function closeInfoToolTipPopup() {
     closeAllPopups();
     if (isSuccessInfoToolTip) {
-      handleLogin({ email: userEmail, password: userPassword });
+      history.push("/sign-in");
     }
   }
 
@@ -177,7 +177,6 @@ function App() {
     setCardForDelete({});
   }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   function handleCheckToken() {
     setIsLoading(true);
     auth
@@ -202,17 +201,15 @@ function App() {
     console.log(email, password);
     auth
       .register(email, password)
-      .then((res) => {
+      .then(() => {
         setIsLoading(false);
-        //setUserEmail(res.email);
-        //setUserPassword(res.password);
         setIsSuccessInfoToolTip(true);
         setInfoToolTipPopupOpen(true);
-        history.push("/signin");
       })
       .catch(() => {
         setIsSuccessInfoToolTip(false);
         setInfoToolTipPopupOpen(true);
+        setIsLoading(false);
       });
   }
 
@@ -229,6 +226,7 @@ function App() {
       .catch(() => {
         setIsSuccessInfoToolTip(false);
         setInfoToolTipPopupOpen(true);
+        setIsLoading(false);
       });
   }
 
@@ -237,7 +235,6 @@ function App() {
     localStorage.removeItem("token");
     history.push("/sign-in");
     setUserEmail("");
-    setUserPassword("");
     setIsSuccessInfoToolTip(null);
     console.log();
   }
