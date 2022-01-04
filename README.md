@@ -1,6 +1,12 @@
-# react-mesto-api-full
+# Место (Mesto) на React (frontend + backend)
 
-Репозиторий для приложения проекта `Mesto`, включающий фронтенд и бэкенд части приложения со следующими возможностями: авторизации и регистрации пользователей, операции с карточками и пользователями. Бэкенд расположите в директории `backend/`, а фронтенд - в `frontend/`.
+![Скриншот](mesto.png)
 
-Фронтенд сайта располагается по адресу: https://shamanskiy.15.nomoredomains.monster
-Бэкенд сайта располагается по адресу: https://api.shamanskiy.15.nomoredomains.rocks
+## Описание проекта:
+
+Учебный проект в Яндекс.Практикум
+
+Репозиторий для проекта [Mesto](https://github.com/DenisShamanskiy/mesto), включающий [frontend](https://github.com/DenisShamanskiy/react-mesto-auth) и [backend](https://github.com/DenisShamanskiy/express-mesto) части приложения.
+
+**Frontend** - https://shamanskiy.15.nomoredomains.monster  
+**Backend** - https://api.shamanskiy.15.nomoredomains.rocks
