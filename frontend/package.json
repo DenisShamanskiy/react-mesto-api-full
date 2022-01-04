@@ -18,7 +18,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "start2": "serve -s build -p 3000",
-    "deploy": "npm run build && scp -r ./build/* denis_shamanskiy@84.201.175.90:/home/denis_shamanskiy/react-mesto-api-full/frontend"
+    "deploy": "npm run build && scp -r ./build/* denis_shamanskiy@62.84.116.227:/home/denis_shamanskiy/mesto-frontend"
   },
   "eslintConfig": {
     "extends": [
